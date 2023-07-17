@@ -1,0 +1,107 @@
+﻿@model List<Product>
+
+<h2>Product List</h2>
+
+<div class="row">
+    <div class="col-md-4"> Capacity of Fridge : 480 Liters</div>
+    <div class="col-md-4"> Used Capacity of Fridge : @ViewBag.TotalQuantity</div>
+</div>
+<table class="table">
+    <tr>
+        <th >Name</th>
+        <th >Quantity</th>
+        <th >Last Updated</th>
+        <th>Expiry Date</th>
+        <th>Expiry Alert</th>
+    </tr>
+
+@if (ViewBag.ExpiredProducts != null)
+{
+    <h3>Expired Products:</h3>
+    <ul>
+    @foreach (var product in Model)
+    {
+        <tr>
+            <td>@product.Name</td>
+            <td>@product.Quantity</td>
+            <td>@product.LastUpdated</td>
+            <td>@product.ExpirationDate</td>
+            <td style="color: @(CheckExpiry(product) ? "red" : "inherit")">@GetExpiryAlert(product)</td>
+        </tr>
+    }
+    </ul>
+}
+</table>
+<div class="row">
+    <div class="col-md-4" style="color:red"> Note  : Expiry Alert : If Product is already expired or about to expire in next 24 hours</div>
+</div>
+<style>
+
+    /* CSS class for the table */
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        /* CSS class for the table header */
+        .table th {
+            background-color: #f2f2f2;
+            text-align: left;
+            padding: 8px;
+        }
+
+        /* CSS class for the table rows */
+        .table td {
+            padding: 8px;
+        }
+
+        /* Alternating row colors */
+        .table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+</style>
+
+
+@functions {
+
+    bool IsProductExpired(Product product)
+    {
+        var expiryDate = product.ExpirationDate;
+        var timeRemaining = expiryDate < DateTime.Now;
+        return timeRemaining;
+    }
+    bool IsProductAboutToExpire(Product product)
+    {
+        var expiryDate = product.ExpirationDate;
+        var timeRemaining = expiryDate - DateTime.Now;
+        return timeRemaining.TotalHours <= 24;
+    }
+    bool CheckExpiry(Product product)
+    {
+        if (IsProductExpired(product) || IsProductAboutToExpire(product))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    string GetExpiryAlert(Product product)
+    {
+        if (IsProductAboutToExpire(product))
+        {
+            if (IsProductExpired(product))
+            {
+                return "Remove the item from the refrigerator";
+            }
+            else
+            {
+                return "Expiring soon!";
+            }
+        }
+        else
+        {
+            return "Product is not Expired";
+        }
+    }
+}
